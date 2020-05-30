@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: CLOUD-GATEWAY
+---
+server:
+  port: 8445
+---
+# nacos 配置
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: jaswine.top:18848
+        file-extension: yaml
+        # DEV
+        namespace: b7ab9e87-f67d-4c19-8fa6-c3af840453f0
+        # TEST
+#        namespace: 070a6f4d-189c-48e9-958c-b774c2b9a1f8
+        # PRO
+#        namespace: d3c2ff2b-5740-40e4-9853-25cba1d1b3dc
+---
+#Gateway
+spring:
+  cloud:
+    gateway:
+#      让gateway通过Nacos找到其他的微服务
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: uum
+          uri: lb://CLOUD-UUM
+          predicates:
+            - Path=/uum/**
+---
+#redis
+spring:
+  redis:
+    jedis:
+      pool:
+        min-idle: 0
+        max-idle: 8
+        max-wait: -1ms
+        max-active: 8
+---
+#SpringBoot Devtools
+spring:
+  devtools:
+    restart:
+      additional-paths: src/main
+
+---
+# actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always
+---
+logging:
+  file:
+    max-size: 1GB
+  path: logs/cloud-gateway/
+  level:
+    com.alibaba.nacos.* : error
+
+spring:
+  output:
+    ansi:
+      enabled: always
