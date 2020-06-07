@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
  **/
 @Service
 @Slf4j
-@RocketMQMessageListener(topic = MessageConstant.MSG_TOPIC_ADD_GATEWAY,consumerGroup = MessageConstant.ROCKET_MQ_GROUP)
-public class GatewayAddEvent implements RocketMQListener<String> {
+@RocketMQMessageListener(topic = MessageConstant.MSG_TOPIC_INIT_GATEWAY,consumerGroup = MessageConstant.ROCKET_MQ_GROUP)
+public class GatewayInitEvent implements RocketMQListener<String> {
 
 	@Override
 	public void onMessage(String s) {

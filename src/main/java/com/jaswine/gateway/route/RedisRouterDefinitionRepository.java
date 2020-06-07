@@ -1,8 +1,8 @@
 package com.jaswine.gateway.route;
 
 import com.alibaba.fastjson.JSON;
+import com.jaswine.bean.redis.RedisKeysConstant;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionRepository;
 import org.springframework.cloud.gateway.support.NotFoundException;
@@ -25,8 +25,6 @@ import java.util.List;
 @Slf4j
 public class RedisRouterDefinitionRepository implements RouteDefinitionRepository {
 
-	@Value("gateway.redis.key")
-	private String gatewayRoutes;
 
 	@Resource
 	private RedisTemplate<String,Object> redisTemplate;
@@ -39,11 +37,15 @@ public class RedisRouterDefinitionRepository implements RouteDefinitionRepositor
 	public Flux<RouteDefinition> getRouteDefinitions() {
 		log.info("从redis获得路由信息");
 
-		List<RouteDefinition> routeDefinitions = new ArrayList<>();
-		redisTemplate.opsForHash().values(gatewayRoutes)
-				.forEach(routeDefinition ->
-					routeDefinitions.add(JSON.parseObject(routeDefinition.toString(),RouteDefinition.class))
-				);
+		List<RouteDefinition> routes = (ArrayList)redisTemplate.opsForValue().get(RedisKeysConstant.KEY_GATEWAY_ROUTES);
+
+
+		routes.forEach(route -> {
+			log.info("新增路由信息");
+			routeDefinitions.add();
+		});
+
+
 		log.debug("Redis中路由信息个数为 :{} ; 详情为 : {} ",routeDefinitions.size(),routeDefinitions);
 		return Flux.fromIterable(routeDefinitions);
 	}
@@ -59,7 +61,7 @@ public class RedisRouterDefinitionRepository implements RouteDefinitionRepositor
 		log.info("保存路由信息到Redis中");
 
 		return route.flatMap(routeDefinition -> {
-			redisTemplate.opsForHash().put(gatewayRoutes,routeDefinition.getId(),JSON.toJSONString(routeDefinition));
+			redisTemplate.opsForHash().put(RedisKeysConstant.KEY_GATEWAY_ROUTES,routeDefinition.getId(),JSON.toJSONString(routeDefinition));
 			return Mono.empty();
 		});
 	}
@@ -74,8 +76,8 @@ public class RedisRouterDefinitionRepository implements RouteDefinitionRepositor
 	public Mono<Void> delete(Mono<String> routeId) {
 		log.info("删除Redis中的路由信息");
 		return routeId.flatMap(id -> {
-			if (redisTemplate.opsForHash().hasKey(gatewayRoutes,id)){
-				redisTemplate.opsForHash().delete(gatewayRoutes,id);
+			if (redisTemplate.opsForHash().hasKey(RedisKeysConstant.KEY_GATEWAY_ROUTES,id)){
+				redisTemplate.opsForHash().delete(RedisKeysConstant.KEY_GATEWAY_ROUTES,id);
 				return Mono.empty();
 			}
 			return Mono.defer(() -> Mono.error(new NotFoundException("路由信息没有找到："+id)));
