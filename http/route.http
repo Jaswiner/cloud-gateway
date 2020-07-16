@@ -1,0 +1,70 @@
+
+
+### 增加路由信息
+POST http://{{host}}:{{port}}/actuator/gateway/routes/a
+Content-Type: application/json
+
+{
+  "predicates": [
+    {
+      "name": "Path",
+      "args": {
+        "_genkey_0": "/test"
+      }
+    }
+  ],
+  "filters": [
+    {
+      "name": "AddRequestHeader",
+      "args": {
+        "_genkey_0": "X-Request-Foo",
+        "_genkey_1": "Bar"
+      }
+    },
+    {
+      "name": "PreLog",
+      "args": {
+        "_genkey_0": "a",
+        "_genkey_1": "b"
+      }
+    }
+  ],
+  "uri": "https://www.itmuch.com",
+  "order": 0
+}
+
+### 删除路由信息
+DELETE  http://{{host}}:{{port}}/gateway/routes/a
+
+###  获得路由信息
+GET http://{{host}}:{{port}}/actuator/gateway/routes
+
+### 刷新路由信息
+POST http://{{host}}:{{port}}/actuator/gateway/refresh
+{
+    "route_id": "CompositeDiscoveryClient_CLOUD-UUM",
+    "route_definition": {
+      "id": "CompositeDiscoveryClient_CLOUD-UUM",
+      "predicates": [
+        {
+          "name": "Path",
+          "args": {
+            "pattern": "/CLOUD-UUM/**"
+          }
+        }
+      ],
+      "filters": [
+        {
+          "name": "RewritePath",
+          "args": {
+            "regexp": "/uum/(?<remaining>.*)",
+            "replacement": "/${remaining}"
+          }
+        }
+      ],
+      "uri": "lb://CLOUD-UUM",
+      "order": 0
+    },
+    "order": 0
+  }
+
